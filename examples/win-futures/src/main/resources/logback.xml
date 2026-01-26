@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 日志配置根节点，scan="true" 表示自动扫描配置文件变化（默认60秒），scanPeriod="30 seconds" 可指定扫描间隔 -->
+<configuration scan="true" scanPeriod="30 seconds" debug="false">
+    <!-- 1. 定义常量：可复用的配置项，通过 ${变量名} 引用 -->
+    <property name="LOG_CHARSET" value="UTF-8"/> <!-- 日志编码 -->
+    <property name="LOG_LEVEL" value="INFO"/> <!-- 全局日志级别（TRACE < DEBUG < INFO < WARN < ERROR） -->
+    <property name="LOG_OUTPUT_DIR" value="./logs"/> <!-- 日志文件输出目录（项目根目录下的logs文件夹） -->
+    <property name="LOG_FILE_NAME" value="win-auto-order"/> <!-- 日志文件前缀 -->
+    <!-- 日志格式：包含 时间戳、日志级别、线程名、类名、日志信息、异常堆栈 -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+
+    <!-- 2. 控制台输出器：将日志打印到控制台 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 编码器：指定日志格式和编码 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${LOG_CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <!-- 可选：过滤日志级别，仅输出INFO及以上级别到控制台 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${LOG_LEVEL}</level>
+        </filter>
+    </appender>
+
+    <!-- 3. 文件输出器：将日志写入文件（滚动追加，避免单个文件过大） -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 日志文件路径 -->
+        <file>${LOG_OUTPUT_DIR}/${LOG_FILE_NAME}.log</file>
+        <!-- 滚动策略：按文件大小切割，同时按时间归档 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 归档日志文件名格式：xxx-yyyy-MM-dd-序号.log -->
+            <fileNamePattern>${LOG_OUTPUT_DIR}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize> <!-- 单个日志文件最大100MB -->
+            <maxHistory>7</maxHistory> <!-- 保留7天的归档日志 -->
+            <totalSizeCap>1GB</totalSizeCap> <!-- 所有日志文件总大小不超过1GB -->
+        </rollingPolicy>
+        <!-- 编码器：与控制台格式一致 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${LOG_CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <!-- 过滤日志级别：仅输出INFO及以上级别到文件 -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${LOG_LEVEL}</level>
+        </filter>
+    </appender>
+
+    <!-- 4. 根日志配置：全局日志核心配置 -->
+    <root level="${LOG_LEVEL}">
+        <!-- 关联输出器：同时输出到控制台和文件 -->
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+    <!-- 5. 自定义包日志级别（可选）：单独指定某个包的日志级别，覆盖全局配置 -->
+    <!-- 示例：com.example 包下的日志级别为DEBUG，方便调试该包下的代码 -->
+    <logger name="com.example" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+</configuration>

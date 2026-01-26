@@ -1,0 +1,382 @@
+package com.binance.win;
+
+import cn.hutool.core.thread.ThreadUtil;
+import com.binance.connector.client.derivatives_trading_usds_futures.rest.model.CancelOrderResponse;
+import com.binance.connector.client.derivatives_trading_usds_futures.rest.model.KlineCandlestickDataResponseItem;
+import com.binance.connector.client.derivatives_trading_usds_futures.rest.model.NewOrderResponse;
+import com.binance.connector.client.derivatives_trading_usds_futures.rest.model.PositionInformationV3ResponseInner;
+import com.binance.connector.client.derivatives_trading_usds_futures.rest.model.PriceMatch;
+import com.binance.connector.client.derivatives_trading_usds_futures.rest.model.Side;
+import com.binance.connector.client.derivatives_trading_usds_futures.websocket.stream.model.ContinuousContractKlineCandlestickStreamsResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.binance.win.FactorStats;
+import com.binance.win.OrderManager;
+import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
+
+@Slf4j
+public class marketCache {
+
+    public static final int INTERVAL_CACHE = 10 * 60 * 1000;
+    public static final int joinTurnoverTime = 15;
+    public static final int joinTurnoverTimeMax = 30;
+    public static final int previousPeriod = 90;
+    //最短持仓时间
+    public static final int minHoldTime = 15;
+    //最长持仓时间
+    public static final int maxHoldTime = 6 * 60;
+    //价格平稳停留时间
+    public static final int stableTime = 5;
+    public static final BigDecimal priceRange = new BigDecimal("0.001");
+
+    public static final long startMillis = System.currentTimeMillis();
+
+    public static final Map<LineKey, ContinuousContractKlineCandlestickStreamsResponse> secondLine = new ConcurrentHashMap<>();
+    public static final Map<LineKey, BigDecimal> previousPeriodSum = new ConcurrentHashMap<>();
+    public static final Map<String, List<FactorStats>> openOrders = new ConcurrentHashMap<>();
+    public static final Map<Factor, Boolean> filter = new ConcurrentHashMap<>();
+    public static final PersistentMap statistical = new PersistentMap("E:\\open_source\\stock\\examples\\data\\mock\\statistical.json");
+    public static final PersistentMap statisticalDay = new PersistentMap("E:\\open_source\\stock\\examples\\data\\mock\\statistical-day.json");
+
+    public static void main(String[] args) {
+//        OrderManager.continuousContractKline("ethusdt");
+        OrderManager.continuousContractKline("ethusdt", "adausdt", "avaxusdt", "ltcusdt", "solusdt", "suiusdt", "uniusdt", "linkusdt");
+        /*DateTime dateTime = DateTime.now().withHourOfDay(6).withMinuteOfHour(59).withSecondOfMinute(0).withMillisOfSecond(0);
+        Long start = dateTime.getMillis();
+        Long end = dateTime.plusMinutes(25).getMillis();
+        List<KlineCandlestickDataResponseItem> items = MarketData.klineCandlestickData("ethusdt", start, end);
+        for (KlineCandlestickDataResponseItem item : items) {
+            System.out.println(item);
+        }*/
+    }
+
+    public static void putSecondLine(ContinuousContractKlineCandlestickStreamsResponse line) {
+        // TODO
+        if (!line.getkLowerCase().getxLowerCase()) {
+            return;
+        }
+        secondLine.put(LineKey.builder().symbol(line.getPs()).endTime(line.getkLowerCase().gettLowerCase()).build(), line);
+        secondLine.remove(LineKey.builder().symbol(line.getPs()).endTime(line.getkLowerCase().gettLowerCase() - INTERVAL_CACHE).build());
+//        if (System.currentTimeMillis() - 5 * 60 * 1000 > startMillis) {
+//
+//        }
+        secondLineTrigger(line.getPs(), line.getkLowerCase().gettLowerCase());
+        secondLineLeave(line.getPs(), line.getkLowerCase().gettLowerCase());
+    }
+
+    public static void secondLineTrigger(String symbol, Long endTime) {
+        long timeMillis = System.currentTimeMillis();
+        BigDecimal base = getPreviousPeriod(symbol, endTime);
+        BigDecimal calc = BigDecimal.ZERO;
+        BigDecimal calcBuy = BigDecimal.ZERO;
+        for (int i = 0; i <= joinTurnoverTimeMax; i++) {
+            LineKey lineKey = LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build();
+            ContinuousContractKlineCandlestickStreamsResponse endLine = secondLine.get(lineKey);
+            if (endLine == null) {
+                return;
+            }
+            calc = calc.add(new BigDecimal(endLine.getkLowerCase().getvLowerCase()));
+            calcBuy = calcBuy.add(new BigDecimal(endLine.getkLowerCase().getV()));
+            if (i < joinTurnoverTime || i % 3 != 0) {
+                continue;
+            }
+            BigDecimal calcTurnover = calc.divide(new BigDecimal(i + 1), 4, RoundingMode.DOWN);
+            BigDecimal calcSell = calc.subtract(calcBuy);
+            if (base.compareTo(BigDecimal.ZERO) <= 0 || calc.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+            int takeTurnover;
+            Side side;
+            if (calcBuy.compareTo(calcSell) > 0) {
+                side = Side.BUY;
+                takeTurnover = calcBuy.multiply(new BigDecimal(10)).divide(calc, 4, RoundingMode.DOWN).intValue();
+            } else {
+                side = Side.SELL;
+                takeTurnover = calcSell.multiply(new BigDecimal(10)).divide(calc, 4, RoundingMode.DOWN).intValue();
+            }
+            if (takeTurnover < 7) {
+                continue;
+            }
+            int joinTurnover = calcTurnover.divide(base.multiply(new BigDecimal(3)), 2, RoundingMode.DOWN).intValue();
+            if (symbol.equalsIgnoreCase("ethusdt") || symbol.equalsIgnoreCase("solusdt")) {
+                if (joinTurnover < 2) {
+                    continue;
+                }
+            } else {
+                if (joinTurnover < 5) {
+                    continue;
+                }
+            }
+
+            BigDecimal basePrice = new BigDecimal(endLine.getkLowerCase().getcLowerCase());
+            BigDecimal joinPrice = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime).build()).getkLowerCase().getcLowerCase());
+
+            BigDecimal basePrice5 = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - 5 * 60 * 1000).build()).getkLowerCase().getcLowerCase());
+            if (side.equals(Side.BUY)) {
+                if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
+                    continue;
+                }
+                /*if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                    continue;
+                }*/
+            } else {
+                if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
+                    continue;
+                }
+                /*if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                }*/
+            }
+
+            int finalI = i;
+            FactorStats factor = new FactorStats();
+            String clientOrderId = symbol + "-" + endTime;
+            int hourOfDay = new DateTime(endTime).getHourOfDay();
+            Boolean isNight = hourOfDay < 8 || hourOfDay > 18;
+            if (OrderManager.real && OrderManager.openPosition.get(symbol) == null) {
+                OrderManager.strategy.getMap().forEach((k, v) -> {
+                    if (k.isNight() == isNight && k.getSymbol().equals(symbol) && k.getSide().equals(side)
+                            && k.getJoinTurnoverTime() == finalI
+                            && k.getJoinTurnover() <= (joinTurnover) && k.getJoinTakeTurnover() <= takeTurnover) {
+                        long orderTime = System.currentTimeMillis();
+                        while (System.currentTimeMillis() - orderTime < 500) {
+                            if (OrderManager.getPosition(symbol) != null) {
+                                break;
+                            }
+                            NewOrderResponse newOrderResponse = OrderManager.newPriceMatchOrder(symbol, side, joinPrice, PriceMatch.QUEUE, clientOrderId);
+                            factor.setClientOrderId(clientOrderId);
+                            factor.setNewOrderResponse(newOrderResponse);
+                            ThreadUtil.safeSleep(150);
+                            OrderManager.cancelOrder(symbol, clientOrderId);
+                        }
+                    }
+                });
+            }
+
+            openOrders.compute(symbol, (key, oldValue) -> {
+                factor.setSymbol(symbol);
+                factor.setSide(side);
+                factor.setBaseTurnover(base.intValue());
+                factor.setCalcTurnover(calcTurnover.intValue());
+                factor.setJoinTurnover(joinTurnover);
+                factor.setJoinTakeTurnover(takeTurnover);
+                factor.setJoinTurnoverTime(finalI);
+                factor.setJoinTime(endTime);
+                factor.setJoinPrice(joinPrice);
+                factor.setBasePrice(basePrice);
+
+                if (oldValue == null) {
+                    oldValue = new ArrayList<>();
+                }
+                oldValue.add(factor);
+                return oldValue;
+            });
+//            log.info("secondLineTriggerMock symbol={} cost={}ms delay={}", symbol, System.currentTimeMillis() - timeMillis, System.currentTimeMillis() - endTime);
+        }
+    }
+
+    public static void secondLineLeave(String symbol, Long endTime) {
+        long timeMillis = System.currentTimeMillis();
+        List<FactorStats> factorStatsList = openOrders.get(symbol);
+        if (factorStatsList == null) {
+            return;
+        }
+        Iterator<FactorStats> iterator = factorStatsList.iterator();
+        while (iterator.hasNext()) {
+            FactorStats factorStats = iterator.next();
+            if (minHoldTime * 1000 + factorStats.getJoinTime() > endTime) {
+                continue;
+            }
+            //过期删除
+            if (maxHoldTime * 1000 + factorStats.getJoinTime() < endTime) {
+                long orderTime = System.currentTimeMillis();
+                while (System.currentTimeMillis() - orderTime < 500) {
+                    if (OrderManager.openPosition.get(symbol) == null) {
+                        break;
+                    }
+                    Side colseSide = factorStats.getNewOrderResponse().getSide().equals(Side.BUY) ? Side.SELL : Side.BUY;
+                    OrderManager.newClosePositionOrder(symbol, colseSide, PriceMatch.QUEUE, factorStats.getClientOrderId());
+                    ThreadUtil.safeSleep(150);
+                    OrderManager.cancelOrder(symbol, factorStats.getClientOrderId());
+                }
+                iterator.remove();
+                continue;
+            }
+            long holdTime = (endTime - factorStats.getJoinTime()) / 1000;
+
+            for (int j = stableTime; j < 15; j++) {
+                if (j % 2 == 0) {
+                    continue;
+                }
+                BigDecimal base = BigDecimal.ZERO;
+                for (int i = j; i < holdTime; i++) {
+                    base = base.add(new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build()).getkLowerCase().getvLowerCase()));
+                }
+                base = base.divide(new BigDecimal(holdTime - j), 6, RoundingMode.DOWN);
+                BigDecimal calc = BigDecimal.ZERO;
+                BigDecimal calcBuy = BigDecimal.ZERO;
+                for (int i = 0; i < j; i++) {
+                    calc = calc.add(new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build()).getkLowerCase().getvLowerCase()));
+                    calcBuy = calcBuy.add(new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build()).getkLowerCase().getV()));
+                }
+                calc = calc.divide(new BigDecimal(j), 6, RoundingMode.DOWN);
+
+                calcBuy = calcBuy.divide(new BigDecimal(j), 6, RoundingMode.DOWN);
+                BigDecimal calcSell = calc.subtract(calcBuy);
+                if (base.compareTo(BigDecimal.ZERO) <= 0 || calcSell.compareTo(BigDecimal.ZERO) <= 0
+                        || calcBuy.compareTo(BigDecimal.ZERO) <= 0) {
+                    continue;
+                }
+
+                int leaveTurnover = calc.multiply(new BigDecimal(10)).divide(base, 2, RoundingMode.DOWN).intValue();
+
+                int takeTurnover;
+                if (factorStats.getSide().equals(Side.BUY)) {
+                    takeTurnover = calcBuy.multiply(new BigDecimal(10)).divide(calc, 4, RoundingMode.DOWN).intValue();
+                } else {
+                    takeTurnover = calcSell.multiply(new BigDecimal(10)).divide(calc, 4, RoundingMode.DOWN).intValue();
+                }
+                closePosition(symbol, j, factorStats, leaveTurnover, takeTurnover);
+
+                if (leaveTurnover < 5 || leaveTurnover > 15) {
+                    continue;
+                }
+                if (takeTurnover < 5 || leaveTurnover >= 8) {
+                    continue;
+                }
+                factorStats.setLeaveTurnover(leaveTurnover);
+                factorStats.setLeaveTakeTurnover(takeTurnover);
+                factorStats.setLeaveTime(DateTime.now().withMillisOfSecond(0).getMillis());
+                factorStats.setLeavePrice(new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime).build()).getkLowerCase().getcLowerCase()));
+                BigDecimal actualProfit;
+                if (factorStats.getSide().equals(Side.BUY)) {
+                    actualProfit = factorStats.getLeavePrice().subtract(factorStats.getJoinPrice())
+                            .multiply(new BigDecimal("10000")).divide(factorStats.getJoinPrice(), 2, RoundingMode.DOWN);
+                } else {
+                    actualProfit = factorStats.getJoinPrice().subtract(factorStats.getLeavePrice())
+                            .multiply(new BigDecimal("10000")).divide(factorStats.getLeavePrice(), 2, RoundingMode.DOWN);
+                }
+                factorStats.setStableTime(j);
+                factorStats.setHoldTime(holdTime);
+                factorStats.setActualProfit(actualProfit);
+                Factor factor2 = Factor.builder().symbol(factorStats.getSymbol()).side(factorStats.getSide())
+                        .joinTime(factorStats.getJoinTime()).joinTakeTurnover(factorStats.getJoinTakeTurnover())
+                        .joinTurnover(factorStats.getJoinTurnover()).joinTurnoverTime(factorStats.getJoinTurnoverTime())
+                        .leaveTurnover(leaveTurnover).leaveTakeTurnover(takeTurnover).leaveStableTime(j)
+                        .build();
+                Boolean b = filter.get(factor2);
+                if (b == null) {
+                    log.info("factorStats={}", factorStats);
+                    filter.put(factor2, Boolean.TRUE);
+
+                    {
+                        Factor factor = Factor.builder()
+                                .isNight(factorStats.isNight())
+                                .symbol(factorStats.getSymbol()).side(factorStats.getSide())
+                                .joinTakeTurnover(factorStats.getJoinTakeTurnover())
+                                .joinTurnover(factorStats.getJoinTurnover()).joinTurnoverTime(factorStats.getJoinTurnoverTime())
+                                .leaveTurnover(leaveTurnover).leaveTakeTurnover(takeTurnover).leaveStableTime(j)
+                                .build();
+                        FactorResult result = statistical.get(factor);
+                        if (result == null) {
+                            result = FactorResult.builder().actualProfit(actualProfit.stripTrailingZeros().toPlainString()).build();
+                            statistical.put(factor, result);
+                        } else {
+                            BigDecimal bigDecimal = new BigDecimal(result.getActualProfit());
+                            bigDecimal.add(actualProfit);
+                            result.setActualProfit(bigDecimal.stripTrailingZeros().toPlainString());
+
+                        }
+                        if (actualProfit.compareTo(BigDecimal.ZERO) > 0) {
+                            result.setSuccess(result.getSuccess() + 1);
+                            result.setSuccessHoldTime(result.getSuccessHoldTime() + holdTime);
+                        } else {
+                            result.setFail(result.getFail() + 1);
+                            result.setFailHoldTime(result.getFailHoldTime() + holdTime);
+                        }
+//                        log.info("statistical key={}", factor);
+//                        log.info("statistical value={}", result);
+                    }
+                    {
+                        Factor factor = Factor.builder()
+                                .isNight(factorStats.isNight())
+                                .symbol(factorStats.getSymbol()).side(factorStats.getSide())
+                                .joinDay(DateTime.now().toString("yyyyMMdd"))
+                                .joinTakeTurnover(factorStats.getJoinTakeTurnover())
+                                .joinTurnover(factorStats.getJoinTurnover()).joinTurnoverTime(factorStats.getJoinTurnoverTime())
+                                .leaveTurnover(leaveTurnover).leaveTakeTurnover(takeTurnover).leaveStableTime(j)
+                                .build();
+                        FactorResult result = statisticalDay.get(factor);
+                        if (result == null) {
+                            result = FactorResult.builder().actualProfit(actualProfit.stripTrailingZeros().toPlainString()).build();
+                            statisticalDay.put(factor, result);
+                        } else {
+                            BigDecimal bigDecimal = new BigDecimal(result.getActualProfit());
+                            bigDecimal.add(actualProfit);
+                            result.setActualProfit(bigDecimal.stripTrailingZeros().toPlainString());
+                        }
+                        if (actualProfit.compareTo(BigDecimal.ZERO) > 0) {
+                            result.setSuccess(result.getSuccess() + 1);
+                            result.setSuccessHoldTime(result.getSuccessHoldTime() + holdTime);
+                        } else {
+                            result.setFail(result.getFail() + 1);
+                            result.setFailHoldTime(result.getFailHoldTime() + holdTime);
+                        }
+//                        log.info("statistical key={}", factor);
+//                        log.info("statistical value={}", result);
+                    }
+                }
+            }
+        }
+//        log.info("secondLineLeaveMock symbol={} cost={}ms delay={}", symbol, System.currentTimeMillis() - timeMillis, System.currentTimeMillis() - endTime);
+    }
+
+    private static void closePosition(String symbol, int j, FactorStats factorStats, int leaveTurnover, int takeTurnover) {
+        PositionInformationV3ResponseInner position = OrderManager.openPosition.get(symbol);
+        if (OrderManager.real && position != null) {
+            int finalJ = j;
+            OrderManager.strategy.getMap().forEach((k, v) -> {
+                if (k.isNight() == factorStats.isNight() && k.getSymbol().equals(symbol)
+                        && k.getSide().equals(factorStats.getSide()) && k.getLeaveStableTime() == finalJ
+                        && (k.getLeaveTurnover() >= leaveTurnover || k.getLeaveTakeTurnover() >= takeTurnover)) {
+                    long orderTime = System.currentTimeMillis();
+                    while (System.currentTimeMillis() - orderTime < 500) {
+                        if (OrderManager.getPosition(symbol) == null) {
+                            break;
+                        }
+                        Side colseSide = factorStats.getNewOrderResponse().getSide().equals(Side.BUY) ? Side.SELL : Side.BUY;
+                        OrderManager.newClosePositionOrder(symbol, colseSide, PriceMatch.QUEUE, factorStats.getClientOrderId());
+                        ThreadUtil.safeSleep(150);
+                        OrderManager.cancelOrder(symbol, factorStats.getClientOrderId());
+                    }
+                }
+            });
+        }
+    }
+
+    public static BigDecimal getPreviousPeriod(String symbol, Long endTime) {
+        DateTime dateTime = new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0);
+        Long end = dateTime.minusMinutes(2).getMillis();
+        Long start = dateTime.minusMinutes(previousPeriod + 1).getMillis();
+        LineKey lineKey = LineKey.builder().symbol(symbol).endTime(end).build();
+        BigDecimal computed = previousPeriodSum.computeIfAbsent(lineKey, k -> {
+            BigDecimal base = BigDecimal.ZERO;
+            List<KlineCandlestickDataResponseItem> items = OrderManager.klineCandlestickData(symbol, start, end);
+            for (KlineCandlestickDataResponseItem item : items) {
+                base = base.add(new BigDecimal(item.get(5)));
+            }
+            base = base.divide(new BigDecimal(items.size() * 60), 4, RoundingMode.DOWN);
+            return base;
+        });
+        return computed;
+    }
+
+}
