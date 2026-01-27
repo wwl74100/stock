@@ -66,11 +66,10 @@ public class marketCache {
         }
         secondLine.put(LineKey.builder().symbol(line.getPs()).endTime(line.getkLowerCase().gettLowerCase()).build(), line);
         secondLine.remove(LineKey.builder().symbol(line.getPs()).endTime(line.getkLowerCase().gettLowerCase() - INTERVAL_CACHE).build());
-//        if (System.currentTimeMillis() - 5 * 60 * 1000 > startMillis) {
-//
-//        }
-        secondLineTrigger(line.getPs(), line.getkLowerCase().gettLowerCase());
-        secondLineLeave(line.getPs(), line.getkLowerCase().gettLowerCase());
+        if (System.currentTimeMillis() - 5 * 60 * 1000 > startMillis) {
+            secondLineTrigger(line.getPs(), line.getkLowerCase().gettLowerCase());
+            secondLineLeave(line.getPs(), line.getkLowerCase().gettLowerCase());
+        }
     }
 
     public static void secondLineTrigger(String symbol, Long endTime) {
@@ -125,15 +124,16 @@ public class marketCache {
                 if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
                     continue;
                 }
-                /*if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
                     continue;
-                }*/
+                }
             } else {
                 if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
                     continue;
                 }
-                /*if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
-                }*/
+                if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                    continue;
+                }
             }
 
             int finalI = i;
