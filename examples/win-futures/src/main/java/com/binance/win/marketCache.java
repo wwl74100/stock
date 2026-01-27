@@ -118,28 +118,28 @@ public class marketCache {
 
             BigDecimal basePrice = new BigDecimal(endLine.getkLowerCase().getcLowerCase());
             BigDecimal joinPrice = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime).build()).getkLowerCase().getcLowerCase());
-
             BigDecimal basePrice5 = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - 5 * 60 * 1000).build()).getkLowerCase().getcLowerCase());
             if (side.equals(Side.BUY)) {
                 if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
-                    log.info("basePrice5={},joinPrice={}", basePrice5, joinPrice);
+                    log.info("symbol={},basePrice5={},joinPrice={}", symbol, basePrice5, joinPrice);
                     continue;
                 }
-                if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
-                    log.info("basePrice5={},joinPrice={},joinTurnover={}", basePrice5, joinPrice, joinTurnover);
+                if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
+                    .compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={}", symbol, basePrice5, joinPrice, joinTurnover);
                     continue;
                 }
             } else {
                 if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
-                    log.info("basePrice5={},joinPrice={}", basePrice5, joinPrice);
+                    log.info("symbol={},basePrice5={},joinPrice={}", symbol, basePrice5, joinPrice);
                     continue;
                 }
-                if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
-                    log.info("basePrice5={},joinPrice={},joinTurnover={}", basePrice5, joinPrice, joinTurnover);
+                if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
+                    .compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={}", symbol, basePrice5, joinPrice, joinTurnover);
                     continue;
                 }
             }
-
             int finalI = i;
             FactorStats factor = new FactorStats();
             String clientOrderId = symbol + "-" + endTime;
