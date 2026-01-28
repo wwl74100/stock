@@ -125,22 +125,22 @@ public class marketCache {
                 .endTime(new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(5).getMillis()).build()).get(4));
             if (side.equals(Side.BUY)) {
                 if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
-                    log.info("symbol={},basePrice={},joinPrice={}", symbol, basePrice, joinPrice);
+                    log.info("symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
                     continue;
                 }
                 if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
                     .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
-                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={}", symbol, basePrice5, joinPrice, joinTurnover);
+                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={},side={}", symbol, basePrice5, joinPrice, joinTurnover, side);
                     continue;
                 }
             } else {
                 if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
-                    log.info("symbol={},basePrice={},joinPrice={}", symbol, basePrice, joinPrice);
+                    log.info("symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
                     continue;
                 }
                 if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
                     .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
-                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={}", symbol, basePrice5, joinPrice, joinTurnover);
+                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={},side={}", symbol, basePrice5, joinPrice, joinTurnover, side);
                     continue;
                 }
             }
@@ -404,12 +404,12 @@ public class marketCache {
         BigDecimal sell = base.subtract(buy);
         if (buy.compareTo(sell) > 0) {
             if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.7)) > 0) {
-                log.info("symbol={},endTime={},result={}", symbol, endTime, Side.BUY);
+                log.info("symbol={},endTime={},recentlySide={}", symbol, endTime, Side.BUY);
                 result = Side.BUY;
             }
         } else {
             if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.7)) > 0) {
-                log.info("symbol={},endTime={},result={}", symbol, endTime, Side.SELL);
+                log.info("symbol={},endTime={},recentlySide={}", symbol, endTime, Side.SELL);
                 result = Side.SELL;
             }
         }
@@ -434,7 +434,7 @@ public class marketCache {
                 return false;
             }
         }
-        log.info("symbol={},side={},endTime={}", symbol, side, endTime);
+        log.info("isTurn=true,symbol={},side={},endTime={}", symbol, side, endTime);
         return true;
     }
 
