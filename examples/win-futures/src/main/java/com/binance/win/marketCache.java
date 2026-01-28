@@ -95,11 +95,11 @@ public class marketCache {
             
             int joinTurnover = calcTurnover.divide(base.multiply(new BigDecimal(3)), 2, RoundingMode.DOWN).intValue();
             if (symbol.equalsIgnoreCase("ethusdt") || symbol.equalsIgnoreCase("solusdt")) {
-                if (joinTurnover < 2) {
+                if (joinTurnover < 3) {
                     continue;
                 }
             } else {
-                if (joinTurnover < 5) {
+                if (joinTurnover < 6) {
                     continue;
                 }
             }
