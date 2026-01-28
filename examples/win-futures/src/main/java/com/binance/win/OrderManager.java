@@ -93,7 +93,7 @@ public class OrderManager {
 
 
 
-    public static final PersistentMap strategy = new PersistentMap("E:\\open_source\\stock\\examples\\data\\statistical.json");
+    public static final PersistentMap strategy = new PersistentMap("E:\\open_source\\stock\\examples\\data\\strategy.json");
 
     public static final PersistentMap statistical = new PersistentMap("E:\\open_source\\stock\\examples\\data\\statistical-day.json");
 

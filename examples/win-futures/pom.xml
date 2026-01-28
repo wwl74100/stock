@@ -30,7 +30,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>  <!-- 2025-2026 最新稳定版，建议用最新 -->
+                <version>3.4.0</version>  <!-- 2025-2026 最新稳定版，建议用最新 -->
                 <executions>
                     <execution>
                         <phase>package</phase>
