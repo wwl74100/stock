@@ -404,12 +404,12 @@ public class marketCache {
         BigDecimal sell = base.subtract(buy);
         if (buy.compareTo(sell) > 0) {
             if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
-                log.info("symbol={},endTime={},buy={},sell={}", symbol, endTime, buy, sell);
+                log.info("symbol={},endTime={},result={}", symbol, endTime, Side.BUY);
                 result = Side.BUY;
             }
         } else {
             if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
-                log.info("symbol={},endTime={},buy={},sell={}", symbol, endTime, buy, sell);
+                log.info("symbol={},endTime={},result={}", symbol, endTime, Side.SELL);
                 result = Side.SELL;
             }
         }
