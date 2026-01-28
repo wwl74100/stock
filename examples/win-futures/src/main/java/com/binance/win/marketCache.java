@@ -118,7 +118,7 @@ public class marketCache {
                 continue;
             }
             Side recentlySide = recentlySide(symbol, endTime);
-            if (recentlySide != null) {
+            if (side.equals(recentlySide)) {
                 continue;
             }
 
@@ -402,11 +402,11 @@ public class marketCache {
         }
         BigDecimal sell = base.subtract(buy);
         if (buy.compareTo(sell) > 0) {
-            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.85)) > 0) {
                 result = Side.BUY;
             }
         } else {
-            if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+            if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.85)) > 0) {
                 result = Side.SELL;
             }
         }
