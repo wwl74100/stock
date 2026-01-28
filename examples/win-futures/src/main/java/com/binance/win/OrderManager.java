@@ -92,10 +92,10 @@ public class OrderManager {
     }
 
 
+    public static final String dataPath = System.getProperty("path", "/home/");
+    public static final PersistentMap strategy = new PersistentMap(dataPath+"strategy.json");
 
-    public static final PersistentMap strategy = new PersistentMap("E:\\open_source\\stock\\examples\\data\\strategy.json");
-
-    public static final PersistentMap statistical = new PersistentMap("E:\\open_source\\stock\\examples\\data\\statistical-day.json");
+//    public static final PersistentMap statistical = new PersistentMap("E:\\open_source\\stock\\examples\\data\\statistical-day.json");
 
     public static final Boolean real = Boolean.FALSE;
 

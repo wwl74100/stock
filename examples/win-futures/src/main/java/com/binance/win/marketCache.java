@@ -45,8 +45,8 @@ public class marketCache {
     public static final Map<LineKey, KlineCandlestickDataResponseItem> minuteLine = new ConcurrentHashMap<>();
     public static final Map<String, List<FactorStats>> openOrders = new ConcurrentHashMap<>();
     public static final Map<Factor, Boolean> filter = new ConcurrentHashMap<>();
-    public static final PersistentMap statistical = new PersistentMap("E:\\open_source\\stock\\examples\\data\\mock\\statistical.json");
-    public static final PersistentMap statisticalDay = new PersistentMap("E:\\open_source\\stock\\examples\\data\\mock\\statistical-day.json");
+    public static final PersistentMap statistical = new PersistentMap(OrderManager.dataPath+"statistical.json");
+    public static final PersistentMap statisticalDay = new PersistentMap(OrderManager.dataPath+"statistical-day.json");
 
     public static void main(String[] args) {
 //        OrderManager.continuousContractKline("ethusdt");
