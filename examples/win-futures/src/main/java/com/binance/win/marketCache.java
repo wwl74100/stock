@@ -127,7 +127,7 @@ public class marketCache {
             BigDecimal basePrice5 = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - 5 * 60 * 1000).build()).getkLowerCase().getcLowerCase());
             if (side.equals(Side.BUY)) {
                 if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
-                    log.info("symbol={},basePrice5={},joinPrice={}", symbol, basePrice5, joinPrice);
+                    log.info("symbol={},basePrice={},joinPrice={}", symbol, basePrice, joinPrice);
                     continue;
                 }
                 if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
@@ -137,7 +137,7 @@ public class marketCache {
                 }
             } else {
                 if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
-                    log.info("symbol={},basePrice5={},joinPrice={}", symbol, basePrice5, joinPrice);
+                    log.info("symbol={},basePrice={},joinPrice={}", symbol, basePrice, joinPrice);
                     continue;
                 }
                 if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
@@ -397,8 +397,8 @@ public class marketCache {
         BigDecimal buy = BigDecimal.ZERO;
         for (int i = 1; i < 6; i++) {
             Long end = dateTime.minusMinutes(i).getMillis();
-            base = base.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end)).get(5)));
-            buy = buy.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end)).get(9)));
+            base = base.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end).build()).get(5)));
+            buy = buy.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end).build()).get(9)));
         }
         BigDecimal sell = base.subtract(buy);
         if (buy.compareTo(sell) > 0) {
