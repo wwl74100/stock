@@ -118,7 +118,7 @@ public class marketCache {
                 continue;
             }
             Side recentlySide = recentlySide(symbol, endTime);
-            if (side.equals(recentlySide)) {
+            if (recentlySide != null) {
                 continue;
             }
 
