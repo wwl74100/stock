@@ -76,6 +76,10 @@ public class marketCache {
         BigDecimal base = getPreviousPeriod(symbol, endTime);
         BigDecimal calc = BigDecimal.ZERO;
         BigDecimal calcBuy = BigDecimal.ZERO;
+        Side recentlySide = recentlySide(symbol, endTime);
+        if (recentlySide != null) {
+            return;
+        }
         for (int i = 0; i <= joinTurnoverTimeMax; i++) {
             LineKey lineKey = LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build();
             ContinuousContractKlineCandlestickStreamsResponse endLine = secondLine.get(lineKey);
@@ -113,10 +117,6 @@ public class marketCache {
                 takeTurnover = calcSell.multiply(new BigDecimal(10)).divide(calc, 4, RoundingMode.DOWN).intValue();
             }
             if (takeTurnover < 7) {
-                continue;
-            }
-            Side recentlySide = recentlySide(symbol, endTime);
-            if (recentlySide != null) {
                 continue;
             }
 
