@@ -52,7 +52,7 @@ public class OrderManager {
         if (webSocketStreams == null) {
             WebSocketClientConfiguration clientConfiguration =
                     DerivativesTradingUsdsFuturesWebSocketStreamsUtil.getClientConfiguration();
-            clientConfiguration.setWebSocketProxy(new Socks5Proxy("0.0.0.0",7890));
+            clientConfiguration.setWebSocketProxy(new Socks5Proxy("0.0.0.0",7891));
             webSocketStreams = new DerivativesTradingUsdsFuturesWebSocketStreams(clientConfiguration);
         }
         return webSocketStreams;
@@ -67,7 +67,7 @@ public class OrderManager {
                     DerivativesTradingUsdsFuturesRestApiUtil.getClientConfiguration();
             SignatureConfiguration signatureConfiguration = new SignatureConfiguration();
             signatureConfiguration.setApiKey("ybfbdsW8XNMJf3KgKSYdT2z0fkG1CyrQsrRJJOwFryoCsaURbFNoZiy0AkGBHeCE");
-            signatureConfiguration.setPrivateKey("E:\\2022-learn\\src\\main\\java\\profit\\private.key");
+            signatureConfiguration.setPrivateKey(privatePath);
             clientConfiguration.setSignatureConfiguration(signatureConfiguration);
             api = new DerivativesTradingUsdsFuturesRestApi(clientConfiguration);
         }
@@ -79,7 +79,7 @@ public class OrderManager {
 
     static {
         System.setProperty("socksProxyHost", "0.0.0.0");
-        System.setProperty("socksProxyPort", "7890");
+        System.setProperty("socksProxyPort", "7891");
         getWebSocketStreams();
         getApi();
         /*//  定时刷新路由
@@ -93,6 +93,8 @@ public class OrderManager {
 
 
     public static final String dataPath = System.getProperty("path", "/home/");
+
+    public static final String privatePath = System.getProperty("private", "/home/");
     public static final PersistentMap strategy = new PersistentMap(dataPath+"strategy.json");
 
 //    public static final PersistentMap statistical = new PersistentMap("E:\\open_source\\stock\\examples\\data\\statistical-day.json");
