@@ -67,10 +67,8 @@ public class marketCache {
         }
         secondLine.put(LineKey.builder().symbol(line.getPs()).endTime(line.getkLowerCase().gettLowerCase()).build(), line);
         secondLine.remove(LineKey.builder().symbol(line.getPs()).endTime(line.getkLowerCase().gettLowerCase() - INTERVAL_CACHE).build());
-        if (System.currentTimeMillis() - 5 * 60 * 1000 > startMillis) {
-            secondLineTrigger(line.getPs(), line.getkLowerCase().gettLowerCase());
-            secondLineLeave(line.getPs(), line.getkLowerCase().gettLowerCase());
-        }
+        secondLineTrigger(line.getPs(), line.getkLowerCase().gettLowerCase());
+        secondLineLeave(line.getPs(), line.getkLowerCase().gettLowerCase());
     }
 
     public static void secondLineTrigger(String symbol, Long endTime) {
@@ -124,7 +122,8 @@ public class marketCache {
 
             BigDecimal basePrice = new BigDecimal(endLine.getkLowerCase().getcLowerCase());
             BigDecimal joinPrice = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime).build()).getkLowerCase().getcLowerCase());
-            BigDecimal basePrice5 = new BigDecimal(secondLine.get(LineKey.builder().symbol(symbol).endTime(endTime - 5 * 60 * 1000).build()).getkLowerCase().getcLowerCase());
+            BigDecimal basePrice5 = new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol)
+                .endTime(new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(5).getMillis()).build()).get(4));
             if (side.equals(Side.BUY)) {
                 if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
                     log.info("symbol={},basePrice={},joinPrice={}", symbol, basePrice, joinPrice);
