@@ -396,19 +396,19 @@ public class marketCache {
         DateTime dateTime = new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0);
         BigDecimal base = BigDecimal.ZERO;
         BigDecimal buy = BigDecimal.ZERO;
-        for (int i = 1; i < 6; i++) {
+        for (int i = 1; i < 9; i++) {
             Long end = dateTime.minusMinutes(i).getMillis();
             base = base.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end).build()).get(5)));
             buy = buy.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end).build()).get(9)));
         }
         BigDecimal sell = base.subtract(buy);
         if (buy.compareTo(sell) > 0) {
-            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.7)) > 0) {
                 log.info("symbol={},endTime={},result={}", symbol, endTime, Side.BUY);
                 result = Side.BUY;
             }
         } else {
-            if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+            if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.7)) > 0) {
                 log.info("symbol={},endTime={},result={}", symbol, endTime, Side.SELL);
                 result = Side.SELL;
             }
