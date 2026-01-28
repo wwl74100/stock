@@ -129,7 +129,7 @@ public class marketCache {
                     continue;
                 }
                 if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
-                    .compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                    .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
                     log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={}", symbol, basePrice5, joinPrice, joinTurnover);
                     continue;
                 }
@@ -139,10 +139,13 @@ public class marketCache {
                     continue;
                 }
                 if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
-                    .compareTo(priceRange.multiply(new BigDecimal(0.3 * joinTurnover))) > 0) {
+                    .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
                     log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={}", symbol, basePrice5, joinPrice, joinTurnover);
                     continue;
                 }
+            }
+            if (isTurn(symbol, side, endTime)) {
+                continue;
             }
             int finalI = i;
             FactorStats factor = new FactorStats();
@@ -411,6 +414,28 @@ public class marketCache {
             }
         }
         return result;
+    }
+
+    public static boolean isTurn(String symbol, Side side, Long endTime) {
+        BigDecimal base = BigDecimal.ZERO;
+        BigDecimal buy = BigDecimal.ZERO;
+        for (int i = 0; i < 60; i++) {
+            LineKey lineKey = LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build();
+            buy = buy.add(new BigDecimal(secondLine.get(lineKey).getkLowerCase().getV()));
+            base = base.add(new BigDecimal(secondLine.get(lineKey).getkLowerCase().getvLowerCase()));
+        }
+        BigDecimal sell = base.subtract(buy);
+        if (side.equals(Side.BUY)) {
+            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+                return false;
+            }
+        } else {
+            if (sell.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+                return false;
+            }
+        }
+        log.info("symbol={},side={},endTime={}", symbol, side, endTime);
+        return true;
     }
 
 }
