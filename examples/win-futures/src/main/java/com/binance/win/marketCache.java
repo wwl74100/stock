@@ -93,6 +93,17 @@ public class marketCache {
             if (base.compareTo(BigDecimal.ZERO) <= 0 || calc.compareTo(BigDecimal.ZERO) <= 0) {
                 continue;
             }
+            
+            int joinTurnover = calcTurnover.divide(base.multiply(new BigDecimal(3)), 2, RoundingMode.DOWN).intValue();
+            if (symbol.equalsIgnoreCase("ethusdt") || symbol.equalsIgnoreCase("solusdt")) {
+                if (joinTurnover < 2) {
+                    continue;
+                }
+            } else {
+                if (joinTurnover < 5) {
+                    continue;
+                }
+            }
             int takeTurnover;
             Side side;
             if (calcBuy.compareTo(calcSell) > 0) {
@@ -105,15 +116,9 @@ public class marketCache {
             if (takeTurnover < 7) {
                 continue;
             }
-            int joinTurnover = calcTurnover.divide(base.multiply(new BigDecimal(3)), 2, RoundingMode.DOWN).intValue();
-            if (symbol.equalsIgnoreCase("ethusdt") || symbol.equalsIgnoreCase("solusdt")) {
-                if (joinTurnover < 2) {
-                    continue;
-                }
-            } else {
-                if (joinTurnover < 5) {
-                    continue;
-                }
+            Side recentlySide = recentlySide(symbol, endTime);
+            if (recentlySide != null) {
+                continue;
             }
 
             BigDecimal basePrice = new BigDecimal(endLine.getkLowerCase().getcLowerCase());
@@ -368,19 +373,44 @@ public class marketCache {
 
     public static BigDecimal getPreviousPeriod(String symbol, Long endTime) {
         DateTime dateTime = new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0);
-        Long end = dateTime.minusMinutes(2).getMillis();
-        Long start = dateTime.minusMinutes(previousPeriod + 1).getMillis();
+        Long end = dateTime.getMillis();
+        Long start = dateTime.minusMinutes(previousPeriod - 1).getMillis();
         LineKey lineKey = LineKey.builder().symbol(symbol).endTime(end).build();
         BigDecimal computed = previousPeriodSum.computeIfAbsent(lineKey, k -> {
             BigDecimal base = BigDecimal.ZERO;
             List<KlineCandlestickDataResponseItem> items = OrderManager.klineCandlestickData(symbol, start, end);
             for (KlineCandlestickDataResponseItem item : items) {
+                minuteLine.put(LineKey.builder().symbol(symbol).endTime(Long.parseLong(item.get(0))).build(), item);
                 base = base.add(new BigDecimal(item.get(5)));
             }
             base = base.divide(new BigDecimal(items.size() * 60), 4, RoundingMode.DOWN);
             return base;
         });
         return computed;
+    }
+
+    public static Side recentlySide(String symbol, Long endTime) {
+        Side result = null;
+        DateTime dateTime = new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0);
+        BigDecimal base = BigDecimal.ZERO;
+        BigDecimal buy = BigDecimal.ZERO;
+        for (int i = 1; i < 6; i++) {
+            Long end = dateTime.minusMinutes(i).getMillis();
+            base = base.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end)).get(5)));
+            buy = buy.add(new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol).endTime(end)).get(9)));
+        }
+        BigDecimal sell = base.subtract(buy);
+        if (buy.compareTo(sell) > 0) {
+            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+                result = Side.BUY;
+            }
+        } else {
+            if (sell.divide(buy, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
+                result = Side.SELL;
+            }
+        }
+        log.info("symbol={},endTime={},buy={},sell={}", symbol, endTime, buy, sell);
+        return result;
     }
 
 }
