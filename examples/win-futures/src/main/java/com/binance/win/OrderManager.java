@@ -32,6 +32,7 @@ import com.binance.connector.client.derivatives_trading_usds_futures.websocket.s
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -310,7 +311,7 @@ public class OrderManager {
 
     @SneakyThrows
     public static void continuousContractKline(String... symbols) {
-        log.info("continuousContractKline symbols={}", symbols);
+        log.info("continuousContractKline symbols={}", Arrays.stream(symbols).toList());
         for (String symbol : symbols) {
             ContinuousContractKlineCandlestickStreamsRequest
                     continuousContractKlineCandlestickStreamsRequest =
