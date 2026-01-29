@@ -125,22 +125,22 @@ public class marketCache {
                 .endTime(new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(5).getMillis()).build()).get(4));
             if (side.equals(Side.BUY)) {
                 if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange) < 0) {
-                    log.info("symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
+                    log.info("price changes too small symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
                     continue;
                 }
                 if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
                     .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
-                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={},side={}", symbol, basePrice5, joinPrice, joinTurnover, side);
+                    log.info("already {} symbol={},basePrice5={},joinPrice={}", side, symbol, basePrice5, joinPrice);
                     continue;
                 }
             } else {
                 if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange) < 0) {
-                    log.info("symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
+                    log.info("price changes too small symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
                     continue;
                 }
                 if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
                     .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
-                    log.info("symbol={},basePrice5={},joinPrice={},joinTurnover={},side={}", symbol, basePrice5, joinPrice, joinTurnover, side);
+                    log.info("already {} symbol={},basePrice5={},joinPrice={}", side, symbol, basePrice5, joinPrice);
                     continue;
                 }
             }
