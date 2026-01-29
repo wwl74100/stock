@@ -82,7 +82,7 @@ public class OrderManager {
         System.setProperty("socksProxyPort", "7891");
         getWebSocketStreams();
         getApi();
-        String symbolStr = System.getProperty("symbol", "ethusdt,solusdt");
+        String symbolStr = System.getProperty("symbol", "ethusdt,solusdt,linkusdt,uniusdt,suiusdt,ltcusdt,avaxusdt,adausdt");
         symbols = symbolStr.split(",");
         /*//  定时刷新路由
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
@@ -310,7 +310,7 @@ public class OrderManager {
 
     @SneakyThrows
     public static void continuousContractKline(String... symbols) {
-        log.info("continuousContractKline symbols=", symbols);
+        log.info("continuousContractKline symbols={}", symbols);
         for (String symbol : symbols) {
             ContinuousContractKlineCandlestickStreamsRequest
                     continuousContractKlineCandlestickStreamsRequest =
