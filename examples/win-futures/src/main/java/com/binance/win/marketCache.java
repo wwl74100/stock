@@ -33,12 +33,10 @@ public class marketCache {
     //最短持仓时间
     public static final int minHoldTime = 15;
     //最长持仓时间
-    public static final int maxHoldTime = 6 * 60;
+    public static final int maxHoldTime = 5 * 60;
     //价格平稳停留时间
     public static final int stableTime = 5;
     public static final BigDecimal priceRange = new BigDecimal("0.001");
-
-    public static final long startMillis = System.currentTimeMillis();
 
     public static final Map<LineKey, ContinuousContractKlineCandlestickStreamsResponse> secondLine = new ConcurrentHashMap<>();
     public static final Map<LineKey, BigDecimal> previousPeriodSum = new ConcurrentHashMap<>();
