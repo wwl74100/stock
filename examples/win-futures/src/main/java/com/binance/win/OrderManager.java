@@ -76,12 +76,14 @@ public class OrderManager {
 
 
     static ScheduledExecutorService scheduledExecutor;
-
+    public static final String[] symbols;
     static {
         System.setProperty("socksProxyHost", "0.0.0.0");
         System.setProperty("socksProxyPort", "7891");
         getWebSocketStreams();
         getApi();
+        String symbolStr = System.getProperty("symbol", "ethusdt,solusdt");
+        symbols = symbolStr.split(",");
         /*//  定时刷新路由
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
                 new NamedThreadFactory("order-manager" + "-", true));
@@ -105,8 +107,6 @@ public class OrderManager {
     public static final String side = System.getProperty("side", "both");
 
     public static final int onceMaxUsdt = getProperty("max.usdt", 300);
-
-    public static final String symbol = System.getProperty("symbol", "ethusdt");
 
     public static final int joinTurnoverTime = getProperty("join.time", 30);
 
