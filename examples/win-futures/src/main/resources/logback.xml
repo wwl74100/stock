@@ -5,9 +5,10 @@
     <property name="LOG_CHARSET" value="UTF-8"/> <!-- 日志编码 -->
     <property name="LOG_LEVEL" value="INFO"/> <!-- 全局日志级别（TRACE < DEBUG < INFO < WARN < ERROR） -->
     <property name="LOG_OUTPUT_DIR" value="./logs"/> <!-- 日志文件输出目录（项目根目录下的logs文件夹） -->
-    <property name="LOG_FILE_NAME" value="win-auto-order"/> <!-- 日志文件前缀 -->
+    <property name="LOG_FILE_NAME" value="win"/> <!-- 日志文件前缀 -->
     <!-- 日志格式：包含 时间戳、日志级别、线程名、类名、日志信息、异常堆栈 -->
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} --- %msg%n"/>
+    <!-- <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/> -->
 
     <!-- 2. 控制台输出器：将日志打印到控制台 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
