@@ -29,7 +29,7 @@ public class marketCache {
     public static final int INTERVAL_CACHE = 10 * 60 * 1000;
     public static final int joinTurnoverTime = 15;
     public static final int joinTurnoverTimeMax = 30;
-    public static final int previousPeriod = 90;
+    public static final int previousPeriod = 30;
     //最短持仓时间
     public static final int minHoldTime = 15;
     //最长持仓时间
