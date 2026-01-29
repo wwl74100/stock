@@ -129,7 +129,7 @@ public class marketCache {
                 if (joinPrice.divide(basePrice5, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
                     .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
                     log.info("already {} symbol={},basePrice5={},joinPrice={}", side, symbol, basePrice5, joinPrice);
-                    continue;
+                    return;
                 }
             } else {
                 if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange) < 0) {
@@ -139,7 +139,7 @@ public class marketCache {
                 if (basePrice5.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE)
                     .compareTo(priceRange.multiply(new BigDecimal(0.2 * joinTurnover))) > 0) {
                     log.info("already {} symbol={},basePrice5={},joinPrice={}", side, symbol, basePrice5, joinPrice);
-                    continue;
+                    return;
                 }
             }
             if (isTurn(symbol, side, endTime, i, takeTurnover)) {
