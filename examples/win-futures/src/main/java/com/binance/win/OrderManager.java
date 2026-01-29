@@ -325,8 +325,8 @@ public class OrderManager {
                         ContinuousContractKlineCandlestickStreamsResponse take = response.take();
                         com.binance.win.marketCache.putSecondLine(take);
 //                        log.info("continuousContractKlineCandlestickStreams take={}", take);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    } catch (Exception e) {
+                        log.warn("continuousContractKline fail", e);
                     }
                 }
             });
@@ -342,7 +342,7 @@ public class OrderManager {
         ObjectMapper mapper = new ObjectMapper();
         Interval interval = Interval.INTERVAL_1m;
         Long limit = 1440L;
-        log.info("klineCandlestickData symbol={},endTime={}", symbol, endTime);
+        //log.info("klineCandlestickData symbol={},endTime={}", symbol, endTime);
         ApiResponse<KlineCandlestickDataResponse> response = getApi().klineCandlestickData(symbol, interval, startTime, endTime, limit);
         return response.getData().stream().toList();
     }
