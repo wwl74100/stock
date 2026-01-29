@@ -124,7 +124,7 @@ public class marketCache {
             BigDecimal basePrice5 = new BigDecimal(minuteLine.get(LineKey.builder().symbol(symbol)
                 .endTime(new DateTime(endTime).withSecondOfMinute(0).withMillisOfSecond(0).minusMinutes(5).getMillis()).build()).get(4));
             if (side.equals(Side.BUY)) {
-                if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
+                if (joinPrice.divide(basePrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange) < 0) {
                     log.info("symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
                     continue;
                 }
@@ -134,7 +134,7 @@ public class marketCache {
                     continue;
                 }
             } else {
-                if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).abs().compareTo(priceRange) < 0) {
+                if (basePrice.divide(joinPrice, 6, RoundingMode.DOWN).subtract(BigDecimal.ONE).compareTo(priceRange) < 0) {
                     log.info("symbol={},basePrice={},joinPrice={},side={}", symbol, basePrice, joinPrice, side);
                     continue;
                 }
@@ -144,7 +144,7 @@ public class marketCache {
                     continue;
                 }
             }
-            if (isTurn(symbol, side, endTime)) {
+            if (isTurn(symbol, side, endTime, i, takeTurnover)) {
                 continue;
             }
             int finalI = i;
@@ -416,26 +416,26 @@ public class marketCache {
         return result;
     }
 
-    public static boolean isTurn(String symbol, Side side, Long endTime) {
+    public static boolean isTurn(String symbol, Side side, Long endTime, int continues, int takeTurnover) {
         BigDecimal base = BigDecimal.ZERO;
         BigDecimal buy = BigDecimal.ZERO;
-        for (int i = 0; i < 60; i++) {
+        for (int i = continues; i < continues * 2; i++) {
             LineKey lineKey = LineKey.builder().symbol(symbol).endTime(endTime - i * 1000).build();
             buy = buy.add(new BigDecimal(secondLine.get(lineKey).getkLowerCase().getV()));
             base = base.add(new BigDecimal(secondLine.get(lineKey).getkLowerCase().getvLowerCase()));
         }
         BigDecimal sell = base.subtract(buy);
         if (side.equals(Side.BUY)) {
-            if (buy.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
-                return false;
+            if (buy.multiply(new BigDecimal(13)).divide(base, 2, RoundingMode.DOWN).compareTo(new BigDecimal(takeTurnover)) > 0) {
+                return true;
             }
         } else {
-            if (sell.divide(sell, 2, RoundingMode.DOWN).compareTo(new BigDecimal(1.5)) > 0) {
-                return false;
+            if (sell.multiply(new BigDecimal(13)).divide(base, 2, RoundingMode.DOWN).compareTo(new BigDecimal(takeTurnover)) > 0) {
+                return true;
             }
         }
-        log.info("isTurn=true,symbol={},side={},endTime={}", symbol, side, endTime);
-        return true;
+        log.info("isTurn=false,symbol={},side={},endTime={}", symbol, side, endTime);
+        return false;
     }
 
 }
