@@ -310,6 +310,7 @@ public class OrderManager {
 
     @SneakyThrows
     public static void continuousContractKline(String... symbols) {
+        log.info("continuousContractKline symbols=", symbols);
         for (String symbol : symbols) {
             ContinuousContractKlineCandlestickStreamsRequest
                     continuousContractKlineCandlestickStreamsRequest =
