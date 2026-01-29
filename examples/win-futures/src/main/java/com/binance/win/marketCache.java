@@ -50,11 +50,11 @@ public class marketCache {
 
     public static void main(String[] args) {
 //        OrderManager.continuousContractKline("ethusdt");
-        OrderManager.continuousContractKline("ethusdt", "adausdt", "avaxusdt", "ltcusdt", "solusdt", "suiusdt", "uniusdt", "linkusdt");
-        /*DateTime dateTime = DateTime.now().withHourOfDay(6).withMinuteOfHour(59).withSecondOfMinute(0).withMillisOfSecond(0);
+        OrderManager.continuousContractKline(OrderManager.symbols);
+        /*DateTime dateTime = DateTime.now().withHourOfDay(1).withMinuteOfHour(3).withSecondOfMinute(0).withMillisOfSecond(0);
         Long start = dateTime.getMillis();
-        Long end = dateTime.plusMinutes(25).getMillis();
-        List<KlineCandlestickDataResponseItem> items = MarketData.klineCandlestickData("ethusdt", start, end);
+        Long end = dateTime.plusMinutes(15).getMillis();
+        List<KlineCandlestickDataResponseItem> items = OrderManager.klineCandlestickData("ethusdt", start, end);
         for (KlineCandlestickDataResponseItem item : items) {
             System.out.println(item);
         }*/
