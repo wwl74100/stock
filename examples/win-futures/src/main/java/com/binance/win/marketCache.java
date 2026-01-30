@@ -25,6 +25,7 @@ import org.joda.time.DateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import cn.hutool.core.thread.NamedThreadFactory;
 
 @Slf4j
 public class marketCache {
