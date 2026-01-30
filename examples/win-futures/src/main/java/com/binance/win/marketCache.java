@@ -60,8 +60,8 @@ public class marketCache {
             long millis = DateTime.now().minusSeconds(15).withMillisOfSecond(0).getMillis();
             for (String symbol : OrderManager.symbols) {
                 if (secondLine.get(LineKey.builder().symbol(symbol.toUpperCase()).endTime(millis).build()) == null) {
-                    log.info("reconnect continuousContractKline symbol={}", symbol);
-                    OrderManager.continuousContractKline(symbol);
+                    log.info("restart continuousContractKline symbol={}", symbol);
+                    System.exit(1111);
                 }
             }
         }, 30, 15, TimeUnit.SECONDS);
