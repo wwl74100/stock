@@ -85,12 +85,13 @@ public class OrderManager {
         getApi();
         String symbolStr = System.getProperty("symbol", "ethusdt,solusdt,linkusdt,uniusdt,suiusdt,ltcusdt,avaxusdt,adausdt");
         symbols = symbolStr.split(",");
-        /*//  定时刷新路由
+         //  定时刷新路由
         scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
                 new NamedThreadFactory("order-manager" + "-", true));
         scheduledExecutor.scheduleAtFixedRate(() -> {
             // TODO
-        }, 10, 700, TimeUnit.MILLISECONDS);*/
+            continuousContractKline();
+        }, 10, 180, TimeUnit.SECONDS);
 
     }
 
@@ -310,12 +311,13 @@ public class OrderManager {
 
 
     @SneakyThrows
-    public static void continuousContractKline(String... symbols) {
-        log.info("continuousContractKline symbols={}", Arrays.stream(symbols).toList());
+    public static void continuousContractKline() {
+        log.info("continuousContractKline symbols={}", Arrays.stream(OrderManager.symbols).toList());
         for (String symbol : symbols) {
             ContinuousContractKlineCandlestickStreamsRequest
                     continuousContractKlineCandlestickStreamsRequest =
                     new ContinuousContractKlineCandlestickStreamsRequest();
+            continuousContractKlineCandlestickStreamsRequest.setId("win");
             continuousContractKlineCandlestickStreamsRequest.pair(symbol);
             continuousContractKlineCandlestickStreamsRequest.contractType("perpetual");
             continuousContractKlineCandlestickStreamsRequest.interval("1s");
@@ -326,7 +328,6 @@ public class OrderManager {
                     try {
                         ContinuousContractKlineCandlestickStreamsResponse take = response.take();
                         com.binance.win.marketCache.putSecondLine(take);
-//                        log.info("continuousContractKlineCandlestickStreams take={}", take);
                     } catch (Exception e) {
                         log.warn("continuousContractKline fail", e);
                     }
@@ -336,7 +337,6 @@ public class OrderManager {
             thread.setName("put-line-" + symbol);
             thread.start();
         }
-
     }
 
     @SneakyThrows
