@@ -46,8 +46,25 @@ public class marketCache {
     public static final PersistentMap statistical = new PersistentMap(OrderManager.dataPath+"statistical.json");
     public static final PersistentMap statisticalDay = new PersistentMap(OrderManager.dataPath+"statistical-day.json");
 
+    static ScheduledExecutorService scheduledExecutor;
+    static {
+        //  定时刷新路由
+        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+            new NamedThreadFactory("order-manager" + "-", true));
+        scheduledExecutor.scheduleAtFixedRate(() -> {
+            // TODO
+            long millis = DateTime.now().withMillisOfSecond(0).getMillis();
+            for (String symbol : OrderManager.symbols) {
+                if (secondLine.get(LineKey.builder().symbol(symbol).endTime(millis).build()) == null) {
+                    log.info("reconnect continuousContractKline symbol={}", symbol);
+                    OrderManager.continuousContractKline(symbol);
+                }
+            }
+        }, 10, 10, TimeUnit.SECONDS);
+    }
+
     public static void main(String[] args) {
-        OrderManager.continuousContractKline();
+        OrderManager.continuousContractKline(OrderManager.symbols);
         /*DateTime dateTime = DateTime.now().withHourOfDay(1).withMinuteOfHour(3).withSecondOfMinute(0).withMillisOfSecond(0);
         Long start = dateTime.getMillis();
         Long end = dateTime.plusMinutes(15).getMillis();
