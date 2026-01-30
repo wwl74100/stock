@@ -47,8 +47,7 @@ public class marketCache {
     public static final PersistentMap statisticalDay = new PersistentMap(OrderManager.dataPath+"statistical-day.json");
 
     public static void main(String[] args) {
-//        OrderManager.continuousContractKline("ethusdt");
-        OrderManager.continuousContractKline(OrderManager.symbols);
+        OrderManager.continuousContractKline();
         /*DateTime dateTime = DateTime.now().withHourOfDay(1).withMinuteOfHour(3).withSecondOfMinute(0).withMillisOfSecond(0);
         Long start = dateTime.getMillis();
         Long end = dateTime.plusMinutes(15).getMillis();
