@@ -117,13 +117,13 @@ public class PersistentMap {
                 .thenComparing(e -> e.getValue().getSuccessHoldTime()).reversed()
                 .thenComparing(e -> e.getValue().getFailHoldTime()).reversed()
         );
-        if (list.size() > 400) {
-            List<Entry<Factor, FactorResult>> entries = list.subList(0, 100);
+        if (list.size() > 40) {
+            List<Entry<Factor, FactorResult>> entries = list.subList(0, 10);
             for (Map.Entry<Factor, FactorResult> entry : entries) {
                 log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
             }
             log.info("---------------------------------------------------------------");
-            entries = list.subList(list.size() - 300, list.size() - 1);
+            entries = list.subList(list.size() - 30, list.size() - 1);
             for (Map.Entry<Factor, FactorResult> entry : entries) {
                 log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
             }
