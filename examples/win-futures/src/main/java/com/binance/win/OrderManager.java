@@ -309,15 +309,13 @@ public class OrderManager {
         return null;
     }
 
-
     @SneakyThrows
-    public static void continuousContractKline() {
-        log.info("continuousContractKline symbols={}", Arrays.stream(OrderManager.symbols).toList());
+    public static void continuousContractKline(String... symbols) {
+        log.info("continuousContractKline symbols={}", Arrays.stream(symbols).toList());
         for (String symbol : symbols) {
             ContinuousContractKlineCandlestickStreamsRequest
                     continuousContractKlineCandlestickStreamsRequest =
                     new ContinuousContractKlineCandlestickStreamsRequest();
-            continuousContractKlineCandlestickStreamsRequest.setId("win");
             continuousContractKlineCandlestickStreamsRequest.pair(symbol);
             continuousContractKlineCandlestickStreamsRequest.contractType("perpetual");
             continuousContractKlineCandlestickStreamsRequest.interval("1s");
@@ -328,6 +326,7 @@ public class OrderManager {
                     try {
                         ContinuousContractKlineCandlestickStreamsResponse take = response.take();
                         com.binance.win.marketCache.putSecondLine(take);
+//                        log.info("continuousContractKlineCandlestickStreams take={}", take);
                     } catch (Exception e) {
                         log.warn("continuousContractKline fail", e);
                     }
