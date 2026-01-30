@@ -344,7 +344,7 @@ public class OrderManager {
         ObjectMapper mapper = new ObjectMapper();
         Interval interval = Interval.INTERVAL_1m;
         Long limit = 1440L;
-        //log.info("klineCandlestickData symbol={},endTime={}", symbol, endTime);
+        log.info("klineCandlestickData symbol={},endTime={}", symbol, endTime);
         ApiResponse<KlineCandlestickDataResponse> response = getApi().klineCandlestickData(symbol, interval, startTime, endTime, limit);
         return response.getData().stream().toList();
     }
