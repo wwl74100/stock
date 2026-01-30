@@ -75,8 +75,6 @@ public class OrderManager {
         return api;
     }
 
-
-    static ScheduledExecutorService scheduledExecutor;
     public static final String[] symbols;
     static {
         System.setProperty("socksProxyHost", "0.0.0.0");
@@ -85,16 +83,7 @@ public class OrderManager {
         getApi();
         String symbolStr = System.getProperty("symbol", "ethusdt,solusdt,linkusdt,uniusdt,suiusdt,ltcusdt,avaxusdt,adausdt");
         symbols = symbolStr.split(",");
-         //  定时刷新路由
-        scheduledExecutor = Executors.newSingleThreadScheduledExecutor(
-                new NamedThreadFactory("order-manager" + "-", true));
-        scheduledExecutor.scheduleAtFixedRate(() -> {
-            // TODO
-            continuousContractKline();
-        }, 10, 180, TimeUnit.SECONDS);
-
     }
-
 
     public static final String dataPath = System.getProperty("path", "/home/");
 
