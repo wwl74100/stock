@@ -136,7 +136,6 @@ public class PersistentMap {
                 if (value.size() > 60) {
                     for (int i = value.size() - 30; i < value.size(); i++) {
                         log.info("fail sorted key={}---value={}", value.get(i).getKey(), value.get(i).getValue());
-                        jsonObjList.add(JsonObj.builder().factor(value.get(i).getKey()).factorResult(value.get(i).getValue()).build());
                     }
                 }
             }
