@@ -48,13 +48,17 @@ public class OrderManager {
 
     public static DerivativesTradingUsdsFuturesWebSocketStreams webSocketStreams;
 
-
     public static DerivativesTradingUsdsFuturesWebSocketStreams getWebSocketStreams() {
         if (webSocketStreams == null) {
-            WebSocketClientConfiguration clientConfiguration =
+            try {
+                WebSocketClientConfiguration clientConfiguration =
                     DerivativesTradingUsdsFuturesWebSocketStreamsUtil.getClientConfiguration();
-            clientConfiguration.setWebSocketProxy(new Socks5Proxy("0.0.0.0",7891));
-            webSocketStreams = new DerivativesTradingUsdsFuturesWebSocketStreams(clientConfiguration);
+                    clientConfiguration.setWebSocketProxy(new Socks5Proxy("0.0.0.0",7891));
+                webSocketStreams = new DerivativesTradingUsdsFuturesWebSocketStreams(clientConfiguration);
+            } catch (Exception e) {
+                log.warn("continuousContractKline fail", e);
+                System.exit(1111);
+            }
         }
         return webSocketStreams;
     }
