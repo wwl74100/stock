@@ -142,8 +142,7 @@ public class PersistentMap {
             }
             String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObjList);
             Files.writeString(temp, json);
-            Files.move(temp, FILE_PATH, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            log.info("Saved map to disk ({} entries) path {}", map.size(), FILE_PATH);
+            log.info("Saved map to disk ({} entries) path {}", map.size(), temp);
         } catch (Exception e) {
             log.error("Failed to save map: {}", e);
         }
