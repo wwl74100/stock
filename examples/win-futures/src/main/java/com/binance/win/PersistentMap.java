@@ -110,29 +110,49 @@ public class PersistentMap {
     }
 
     public List<Entry<Factor, FactorResult>> sort() {
+        Map<String, List<Entry<Factor, FactorResult>>> sort = new HashMap<>();
         List<Entry<Factor, FactorResult>> list = new ArrayList<>(map.entrySet());
+        list.forEach((v) -> {
+            sort.compute(v.getKey().getSymbol(), (key, value) -> {
+                if (value == null) {
+                    value = new ArrayList<>();
+                } else {
+                    value.add(v);
+                }
+                return value;
+            });
+        });
+
+        try {
+            // 原子写：先写临时文件再改名，防止写一半崩溃
+            Path temp = FILE_PATH.resolveSibling(FILE_PATH.getFileName() + "-top" + ".tmp");
+            List<JsonObj> jsonObjList = new ArrayList<>();
+            for (List<Entry<Factor, FactorResult>> value : sort.values()) {
+                for (int i = 0; i < 30; i++) {
+                    log.info("top sorted key={}---value={}", value.get(i).getKey(), value.get(i).getValue());
+                    jsonObjList.add(JsonObj.builder().factor(value.get(i).getKey()).factorResult(value.get(i).getValue()).build());
+                }
+                if (value.size() > 60) {
+                    for (int i = value.size() - 30; i < value.size(); i++) {
+                        log.info("fail sorted key={}---value={}", value.get(i).getKey(), value.get(i).getValue());
+                        jsonObjList.add(JsonObj.builder().factor(value.get(i).getKey()).factorResult(value.get(i).getValue()).build());
+                    }
+                }
+            }
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonObjList);
+            Files.writeString(temp, json);
+            Files.move(temp, FILE_PATH, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            log.info("Saved map to disk ({} entries) path {}", map.size(), FILE_PATH);
+        } catch (Exception e) {
+            log.error("Failed to save map: {}", e);
+        }
+
         list.sort(Comparator.comparing((Map.Entry<Factor, FactorResult> e) -> new BigDecimal(e.getValue().getActualProfit()), Comparator.reverseOrder())
                 .thenComparing(e -> e.getValue().getSuccess(), Comparator.reverseOrder())
                 .thenComparing(e -> e.getValue().getFail(), Comparator.reverseOrder())
                 .thenComparing(e -> e.getValue().getSuccessHoldTime()).reversed()
                 .thenComparing(e -> e.getValue().getFailHoldTime()).reversed()
         );
-        if (list.size() > 40) {
-            List<Entry<Factor, FactorResult>> entries = list.subList(0, 10);
-            for (Map.Entry<Factor, FactorResult> entry : entries) {
-                log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
-            }
-            log.info("---------------------------------------------------------------");
-            entries = list.subList(list.size() - 30, list.size() - 1);
-            for (Map.Entry<Factor, FactorResult> entry : entries) {
-                log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
-            }
-        } else {
-            for (Map.Entry<Factor, FactorResult> entry : list) {
-                log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
-            }
-        }
-
         return list;
 
     }
