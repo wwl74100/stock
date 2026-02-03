@@ -30,7 +30,7 @@ import cn.hutool.core.thread.NamedThreadFactory;
 @Slf4j
 public class marketCache {
 
-    public static final int INTERVAL_CACHE = 10 * 60 * 1000;
+    public static final int INTERVAL_CACHE = 150 * 1000;
     public static final int joinTurnoverTime = 15;
     public static final int joinTurnoverTimeMax = 30;
     public static final int previousPeriod = 45;
