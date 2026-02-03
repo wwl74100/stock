@@ -16,8 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import java.util.HashMap;
+import org.joda.time.DateTime;
 
 @Slf4j
 public class PersistentMap {
@@ -119,23 +120,16 @@ public class PersistentMap {
                 .thenComparing(e -> e.getValue().getSuccessHoldTime()).reversed()
                 .thenComparing(e -> e.getValue().getFailHoldTime()).reversed()
         );
-        if (list.size() > 60) {
-            List<Entry<Factor, FactorResult>> entries = list.subList(0, 30);
-            for (Map.Entry<Factor, FactorResult> entry : entries) {
-                log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
-            }
-            log.info("---------------------------------------------------------------");
-            entries = list.subList(list.size() - 30, list.size() - 1);
-            for (Map.Entry<Factor, FactorResult> entry : entries) {
-                log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
-            }
-        } else {
-            for (Map.Entry<Factor, FactorResult> entry : list) {
+        if (FILE_PATH.getFileName().toString().equals("statistical-day.json")) {
+            List<Entry<Factor, FactorResult>> collected = list.stream().filter(x -> {
+                return x.getKey().getJoinDay().equals(DateTime.now().toString("yyyyMMdd"))
+                    || x.getKey().getJoinDay().equals(DateTime.now().minusDays(1).toString("yyyyMMdd"));
+            }).collect(Collectors.toList());
+            for (Entry<Factor, FactorResult> entry : collected) {
                 log.info("sorted key={}---value={}", entry.getKey(), entry.getValue());
             }
         }
         return list;
-
     }
 
 
