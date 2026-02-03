@@ -48,7 +48,7 @@ public class marketCache {
     public static final Map<String, List<FactorStats>> openOrders = new ConcurrentHashMap<>();
     public static final Map<Factor, Boolean> filter = new ConcurrentHashMap<>();
     public static final PersistentMap statistical = new PersistentMap(OrderManager.dataPath+"statistical.json");
-    public static final PersistentMap statisticalDay = new PersistentMap(OrderManager.dataPath+"statistical-day.json");
+    // public static final PersistentMap statisticalDay = new PersistentMap(OrderManager.dataPath+"statistical-day.json");
 
     static ScheduledExecutorService scheduledExecutor;
     static {
@@ -331,37 +331,33 @@ public class marketCache {
                             result.setFail(result.getFail() + 1);
                             result.setFailHoldTime(result.getFailHoldTime() + holdTime);
                         }
-//                        log.info("statistical key={}", factor);
-//                        log.info("statistical value={}", result);
                     }
-                    {
-                        Factor factor = Factor.builder()
-                                .isNight(factorStats.isNight())
-                                .symbol(factorStats.getSymbol()).side(factorStats.getSide())
-                                .joinDay(DateTime.now().toString("yyyyMMdd"))
-                                .joinTakeTurnover(factorStats.getJoinTakeTurnover())
-                                .joinTurnover(factorStats.getJoinTurnover()).joinTurnoverTime(factorStats.getJoinTurnoverTime())
-                                .leaveTurnover(leaveTurnover).leaveTakeTurnover(takeTurnover).leaveStableTime(j)
-                                .build();
-                        FactorResult result = statisticalDay.get(factor);
-                        if (result == null) {
-                            result = FactorResult.builder().actualProfit(actualProfit.stripTrailingZeros().toPlainString()).build();
-                            statisticalDay.put(factor, result);
-                        } else {
-                            BigDecimal bigDecimal = new BigDecimal(result.getActualProfit());
-                            bigDecimal.add(actualProfit);
-                            result.setActualProfit(bigDecimal.stripTrailingZeros().toPlainString());
-                        }
-                        if (actualProfit.compareTo(BigDecimal.ZERO) > 0) {
-                            result.setSuccess(result.getSuccess() + 1);
-                            result.setSuccessHoldTime(result.getSuccessHoldTime() + holdTime);
-                        } else {
-                            result.setFail(result.getFail() + 1);
-                            result.setFailHoldTime(result.getFailHoldTime() + holdTime);
-                        }
-//                        log.info("statistical key={}", factor);
-//                        log.info("statistical value={}", result);
-                    }
+                    // {
+                    //     Factor factor = Factor.builder()
+                    //             .isNight(factorStats.isNight())
+                    //             .symbol(factorStats.getSymbol()).side(factorStats.getSide())
+                    //             .joinDay(DateTime.now().toString("yyyyMMdd"))
+                    //             .joinTakeTurnover(factorStats.getJoinTakeTurnover())
+                    //             .joinTurnover(factorStats.getJoinTurnover()).joinTurnoverTime(factorStats.getJoinTurnoverTime())
+                    //             .leaveTurnover(leaveTurnover).leaveTakeTurnover(takeTurnover).leaveStableTime(j)
+                    //             .build();
+                    //     FactorResult result = statisticalDay.get(factor);
+                    //     if (result == null) {
+                    //         result = FactorResult.builder().actualProfit(actualProfit.stripTrailingZeros().toPlainString()).build();
+                    //         statisticalDay.put(factor, result);
+                    //     } else {
+                    //         BigDecimal bigDecimal = new BigDecimal(result.getActualProfit());
+                    //         bigDecimal.add(actualProfit);
+                    //         result.setActualProfit(bigDecimal.stripTrailingZeros().toPlainString());
+                    //     }
+                    //     if (actualProfit.compareTo(BigDecimal.ZERO) > 0) {
+                    //         result.setSuccess(result.getSuccess() + 1);
+                    //         result.setSuccessHoldTime(result.getSuccessHoldTime() + holdTime);
+                    //     } else {
+                    //         result.setFail(result.getFail() + 1);
+                    //         result.setFailHoldTime(result.getFailHoldTime() + holdTime);
+                    //     }
+                    // }
                 }
             }
         }
