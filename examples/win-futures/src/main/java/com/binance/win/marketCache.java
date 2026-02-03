@@ -57,14 +57,14 @@ public class marketCache {
             new NamedThreadFactory("order-manager" + "-", true));
         scheduledExecutor.scheduleAtFixedRate(() -> {
             // TODO
-            long millis = DateTime.now().minusSeconds(15).withMillisOfSecond(0).getMillis();
+            long millis = DateTime.now().minusSeconds(30).withMillisOfSecond(0).getMillis();
             for (String symbol : OrderManager.symbols) {
                 if (secondLine.get(LineKey.builder().symbol(symbol.toUpperCase()).endTime(millis).build()) == null) {
                     log.info("restart continuousContractKline symbol={}", symbol);
                     System.exit(1111);
                 }
             }
-        }, 30, 15, TimeUnit.SECONDS);
+        }, 60, 30, TimeUnit.SECONDS);
     }
 
     public static void main(String[] args) {
