@@ -53,7 +53,7 @@ public class OrderManager {
             try {
                 WebSocketClientConfiguration clientConfiguration =
                     DerivativesTradingUsdsFuturesWebSocketStreamsUtil.getClientConfiguration();
-                    clientConfiguration.setWebSocketProxy(new Socks5Proxy("0.0.0.0",7891));
+                    clientConfiguration.setWebSocketProxy(new Socks5Proxy("0.0.0.0",7897));
                 webSocketStreams = new DerivativesTradingUsdsFuturesWebSocketStreams(clientConfiguration);
             } catch (Exception e) {
                 log.warn("continuousContractKline fail", e);
@@ -82,7 +82,7 @@ public class OrderManager {
     public static final String[] symbols;
     static {
         System.setProperty("socksProxyHost", "0.0.0.0");
-        System.setProperty("socksProxyPort", "7891");
+        System.setProperty("socksProxyPort", "7897");
         getWebSocketStreams();
         getApi();
         String symbolStr = System.getProperty("symbol", "ethusdt,solusdt,linkusdt,uniusdt,suiusdt,ltcusdt,avaxusdt,adausdt");
